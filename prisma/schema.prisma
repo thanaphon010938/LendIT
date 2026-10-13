@@ -1,0 +1,274 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum UserApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum EquipmentStatus {
+  ACTIVE
+  RETIRED
+}
+
+enum LoanStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+  RETURNED
+}
+
+/// Condition recorded when an admin receives equipment back.
+enum ReturnCondition {
+  NORMAL // สภาพปกติ
+  DAMAGED // ชำรุด แต่ยังใช้งานได้
+  BROKEN // เสีย ใช้งานไม่ได้
+  LOST // สูญหาย
+}
+
+/// Lifecycle of one physical device (asset-tracked equipment only).
+enum UnitStatus {
+  AVAILABLE // ว่าง พร้อมให้ยืม
+  HELD // เก็บไว้ ไม่ให้ยืม (e.g. a spare kept for internal use)
+  ON_LOAN // อยู่กับผู้ยืม
+  IN_REPAIR // เสีย รอซ่อม
+  LOST // สูญหาย รอตรวจสอบ
+  RETIRED // ตัดจำหน่าย/ปลดระวาง: no longer counted in Equipment.quantity
+}
+
+/// Per-device condition recorded on a returned loan line.
+type UnitReturn {
+  unitId    String          @db.ObjectId
+  condition ReturnCondition
+  note      String?
+}
+
+/// Borrower's request to push back the due date of a loan that is out.
+enum ExtensionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum IssueStatus {
+  OPEN // รอซ่อม/รอตรวจสอบ: units are held out of the loanable pool
+  REPAIRED // ซ่อมเสร็จ: units are loanable again
+  WRITTEN_OFF // ตัดจำหน่าย: units were removed from Equipment.quantity
+}
+
+model Department {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  code      String   @unique
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users User[]
+
+  @@map("department")
+}
+
+model User {
+  id                       String             @id @default(auto()) @map("_id") @db.ObjectId
+  employeeId               String?
+  name                     String
+  email                    String?
+  password                 String
+  role                     Role               @default(USER)
+  approvalStatus           UserApprovalStatus @default(APPROVED)
+  isActive                 Boolean?           @default(true)
+  approvalNote             String?
+  approvedAt               DateTime?
+  approvedByAdminId        String?            @db.ObjectId
+  reviewedAt               DateTime?
+  reviewedByAdminId        String?            @db.ObjectId
+  reviewedByAdminName      String?
+  passwordResetRequestedAt DateTime?
+  /// Set when an admin issues a temporary password; cleared once the user sets their own.
+  mustChangePassword       Boolean?
+  departmentId             String             @db.ObjectId
+  department               Department         @relation(fields: [departmentId], references: [id])
+  phone                    String?
+  createdAt                DateTime           @default(now())
+  updatedAt                DateTime           @updatedAt
+
+  loans         Loan[] @relation("BorrowerLoans")
+  approvedLoans Loan[] @relation("ApproverLoans")
+
+  @@index([departmentId])
+  @@index([employeeId])
+  @@index([email])
+  @@map("user")
+}
+
+model Category {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  equipment Equipment[]
+
+  @@map("category")
+}
+
+model Equipment {
+  id              String          @id @default(auto()) @map("_id") @db.ObjectId
+  code            String          @unique
+  name            String
+  categoryId      String          @db.ObjectId
+  category        Category        @relation(fields: [categoryId], references: [id])
+  description     String?
+  imageUrl        String?
+  quantity        Int             @default(1)
+  status          EquipmentStatus @default(ACTIVE)
+  hiddenFromUsers Boolean?        @default(false)
+  /// true: every device is an EquipmentUnit with its own asset tag, and quantity mirrors the
+  /// number of non-retired units. false: a plain stock count (cables, adapters, mice...).
+  trackUnits      Boolean         @default(false)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  loans  Loan[]
+  issues EquipmentIssue[]
+  units  EquipmentUnit[]
+
+  @@index([categoryId])
+  @@map("equipment")
+}
+
+model Loan {
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  equipmentId  String?    @db.ObjectId
+  equipmentIds String[]   @default([])
+  equipment    Equipment? @relation(fields: [equipmentId], references: [id])
+  userId       String?    @db.ObjectId
+  user         User?      @relation("BorrowerLoans", fields: [userId], references: [id])
+  approvedById String?    @db.ObjectId
+  approvedBy   User?      @relation("ApproverLoans", fields: [approvedById], references: [id])
+
+  requestGroupId   String?
+  requesterPhone   String?
+  /// Set when an admin filed the request for the borrower (walk-in at the IT counter).
+  createdByAdminName String?
+  rejectionReason  String?
+  approvedByUserId String?    @db.ObjectId
+  approvedByName   String?
+  rejectedByUserId String?    @db.ObjectId
+  rejectedByName   String?
+  returnedByUserId String?    @db.ObjectId
+  returnedByName   String?
+  approvedAt       DateTime?
+  // Last time an admin took back an approval made by mistake (status went APPROVED -> PENDING).
+  approvalRevokedAt       DateTime?
+  approvalRevokedByUserId String?   @db.ObjectId
+  approvalRevokedByName   String?
+  approvalRevokeReason    String?
+  rejectedAt       DateTime?
+  cancelledAt      DateTime?
+  borrowDate       DateTime   @default(now())
+  dueDate          DateTime
+  returnDate       DateTime?
+  /// Latest due-date extension request (one at a time). originalDueDate keeps the first due date.
+  extensionStatus           ExtensionStatus?
+  extensionRequestedDueDate DateTime?
+  extensionReason           String?
+  extensionRequestedAt      DateTime?
+  extensionReviewedByName   String?
+  extensionReviewedAt       DateTime?
+  extensionRejectReason     String?
+  originalDueDate           DateTime?
+  returnCondition  ReturnCondition?
+  returnNote       String?
+  /// Devices handed over for this line (asset-tracked equipment), chosen by the admin on approval.
+  unitIds          String[]     @default([]) @db.ObjectId
+  /// Condition of each device when it came back.
+  unitReturns      UnitReturn[]
+  status           LoanStatus @default(PENDING)
+  quantity         Int        @default(1)
+  purpose          String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([equipmentId])
+  @@index([requestGroupId])
+  @@map("loan")
+}
+
+/// Units that came back broken or lost. While OPEN they are not loanable.
+model EquipmentIssue {
+  id               String          @id @default(auto()) @map("_id") @db.ObjectId
+  equipmentId      String          @db.ObjectId
+  equipment        Equipment       @relation(fields: [equipmentId], references: [id])
+  loanId           String?         @db.ObjectId
+  unitId           String?         @db.ObjectId
+  unit             EquipmentUnit?  @relation(fields: [unitId], references: [id])
+  condition        ReturnCondition
+  quantity         Int
+  note             String
+  status           IssueStatus     @default(OPEN)
+  reportedByUserId String?         @db.ObjectId
+  reportedByName   String?
+  resolvedAt       DateTime?
+  resolvedByUserId String?         @db.ObjectId
+  resolvedByName   String?
+  resolutionNote   String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@index([equipmentId])
+  @@index([status])
+  @@map("equipment_issue")
+}
+
+/// One physical device of an asset-tracked Equipment model.
+model EquipmentUnit {
+  id           String           @id @default(auto()) @map("_id") @db.ObjectId
+  equipmentId  String           @db.ObjectId
+  equipment    Equipment        @relation(fields: [equipmentId], references: [id])
+  assetTag     String           @unique
+  serialNumber String?
+  status       UnitStatus       @default(AVAILABLE)
+  note         String?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  issues EquipmentIssue[]
+
+  @@index([equipmentId])
+  @@index([status])
+  @@map("equipment_unit")
+}
+
+/// Who did what in the admin area. Written after each successful admin action; never edited.
+model AuditLog {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  actorId    String?  @db.ObjectId
+  actorName  String
+  /// Machine-readable action key, e.g. "loan.approve", "user.deactivate".
+  action     String
+  /// Human-readable Thai description shown in the log page.
+  summary    String
+  targetType String?
+  targetId   String?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([action])
+  @@map("audit_log")
+}

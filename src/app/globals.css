@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 220 23% 97%;
+  --foreground: 222 47% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --border: 220 15% 90%;
+  --input: 220 13% 80%;
+  --ring: 243 75% 59%;
+  --muted: 220 20% 95%;
+  --muted-foreground: 220 14% 29%;
+  --primary: 243 75% 59%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 220 20% 95%;
+  --secondary-foreground: 222 47% 11%;
+  --accent: 243 75% 96%;
+  --accent-foreground: 243 60% 45%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --success: 152 60% 36%;
+  --success-foreground: 0 0% 100%;
+  --warning: 32 95% 44%;
+  --warning-foreground: 0 0% 100%;
+}
+
+body {
+  color: hsl(var(--foreground));
+  background: hsl(var(--background));
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+}
+
+/* Scroll reveal: hidden until in view; descendant animations wait for it too. */
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.6s ease-out,
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal.in-view {
+  opacity: 1;
+  transform: none;
+}
+.reveal:not(.in-view) *,
+.reveal:not(.in-view) *::before,
+.reveal:not(.in-view) *::after {
+  animation-play-state: paused !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+}
