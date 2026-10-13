@@ -6,6 +6,7 @@ import "@fontsource/ibm-plex-sans-thai/600.css";
 import "@fontsource/ibm-plex-sans-thai/700.css";
 import "./globals.css";
 import { AuthSessionProvider } from "@/components/providers/session-provider";
+import { themeInitScript } from "@/components/theme/theme-script";
 
 export const metadata: Metadata = {
   title: "LendIT - ระบบยืมอุปกรณ์ IT",
@@ -18,7 +19,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="th">
+    // The init script sets the `dark` class before hydration, so React must not flag the mismatch.
+    <html lang="th" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body className="font-sans antialiased">
         <AuthSessionProvider>{children}</AuthSessionProvider>
       </body>

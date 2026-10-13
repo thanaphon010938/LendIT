@@ -246,7 +246,7 @@ export default async function DashboardPage() {
   return (
     <div className="flex flex-col gap-6">
       {/* Hero */}
-      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-600 to-violet-600 p-6 text-white shadow-popover animate-rise-in sm:p-8">
+      <section className="keep-light relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-600 to-violet-600 p-6 text-white shadow-popover animate-rise-in sm:p-8">
         <div className="pointer-events-none absolute -right-16 -top-24 h-72 w-72 rounded-full bg-white/10 blur-2xl" />
         <div className="pointer-events-none absolute -bottom-28 left-1/3 h-64 w-64 rounded-full bg-violet-400/30 blur-3xl" />
         <div

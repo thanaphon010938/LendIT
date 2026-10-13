@@ -1,4 +1,48 @@
 import type { Config } from "tailwindcss";
+import defaultColors from "tailwindcss/colors";
+import plugin from "tailwindcss/plugin";
+
+/**
+ * Dark mode for the raw palette classes used across the app (bg-rose-50, text-amber-700, ...).
+ * Each shade is a CSS variable: light mode keeps Tailwind's own values, dark mode swaps in the
+ * mirrored shade (light tints become dark tints, dark text becomes light text). `.keep-light`
+ * opts a subtree out, e.g. the brand gradients that already look right on any background.
+ */
+const PALETTES = [
+  "slate", "red", "orange", "amber", "yellow", "lime", "green", "emerald", "teal",
+  "cyan", "sky", "blue", "indigo", "violet", "purple", "fuchsia", "pink", "rose",
+] as const;
+const SHADES = ["50", "100", "200", "300", "400", "500", "600", "700", "800", "900", "950"] as const;
+type Shade = (typeof SHADES)[number];
+const DARK_SHADE: Record<Shade, Shade> = {
+  "50": "950", "100": "900", "200": "800", "300": "700", "400": "500", "500": "500",
+  "600": "500", "700": "400", "800": "300", "900": "200", "950": "950",
+};
+// The dark card colour; the faintest tints are blended toward it so they read as soft tints.
+const DARK_BASE = [17, 24, 39];
+const TINT_BLEND: Partial<Record<Shade, number>> = { "50": 0.45, "100": 0.6 };
+
+const rgb = (hex: string) => {
+  const n = parseInt(hex.slice(1), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+};
+const triplet = ([r, g, b]: number[]) => `${Math.round(r)} ${Math.round(g)} ${Math.round(b)}`;
+const palette = (name: string) => (defaultColors as unknown as Record<string, Record<Shade, string>>)[name];
+
+const lightVars: Record<string, string> = {};
+const darkVars: Record<string, string> = {};
+const paletteColors: Record<string, Record<string, string>> = {};
+for (const name of PALETTES) {
+  paletteColors[name] = {};
+  for (const shade of SHADES) {
+    const key = `--c-${name}-${shade}`;
+    lightVars[key] = triplet(rgb(palette(name)[shade]));
+    const target = rgb(palette(name)[DARK_SHADE[shade]]);
+    const blend = TINT_BLEND[shade];
+    darkVars[key] = triplet(blend ? target.map((c, i) => c * blend + DARK_BASE[i] * (1 - blend)) : target);
+    paletteColors[name][shade] = `rgb(var(${key}) / <alpha-value>)`;
+  }
+}
 
 const config: Config = {
   darkMode: "class",
@@ -20,6 +64,7 @@ const config: Config = {
         base: ["1.0625rem", { lineHeight: "1.75rem" }],
       },
       colors: {
+        ...paletteColors,
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         border: "hsl(var(--border))",
@@ -126,6 +171,13 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    plugin(({ addBase }) => {
+      addBase({
+        ":root, .dark .keep-light": lightVars,
+        ".dark": darkVars,
+      });
+    }),
+  ],
 };
 export default config;

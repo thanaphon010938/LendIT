@@ -3,7 +3,7 @@ import { LoaderCircle } from "lucide-react";
 export default function MainLoading() {
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-white/75 backdrop-blur-[2px]"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-white/75 backdrop-blur-[2px] dark:bg-background/75"
       role="status"
       aria-live="polite"
       aria-label="กำลังโหลดหน้า"

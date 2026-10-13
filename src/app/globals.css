@@ -24,6 +24,32 @@
   --success-foreground: 0 0% 100%;
   --warning: 32 95% 44%;
   --warning-foreground: 0 0% 100%;
+  color-scheme: light;
+}
+
+.dark {
+  --background: 224 39% 7%;
+  --foreground: 213 31% 93%;
+  --card: 221 39% 11%;
+  --card-foreground: 213 31% 93%;
+  --border: 217 25% 19%;
+  --input: 217 20% 30%;
+  --ring: 243 85% 70%;
+  --muted: 218 30% 15%;
+  --muted-foreground: 215 20% 70%;
+  --primary: 243 80% 66%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 218 30% 17%;
+  --secondary-foreground: 213 31% 93%;
+  --accent: 243 45% 21%;
+  --accent-foreground: 243 95% 85%;
+  --destructive: 0 75% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --success: 152 55% 44%;
+  --success-foreground: 0 0% 100%;
+  --warning: 32 95% 52%;
+  --warning-foreground: 0 0% 100%;
+  color-scheme: dark;
 }
 
 body {

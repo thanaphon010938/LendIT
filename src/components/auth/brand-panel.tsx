@@ -92,7 +92,7 @@ export function BrandPanel() {
   const event = events[eventIndex];
 
   return (
-    <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-gradient-to-br from-indigo-600 via-indigo-600 to-violet-700 p-12 text-white lg:flex">
+    <div className="keep-light relative hidden w-1/2 flex-col justify-between overflow-hidden bg-gradient-to-br from-indigo-600 via-indigo-600 to-violet-700 p-12 text-white lg:flex">
       {/* Background: drifting glows + slowly panning dot grid */}
       <div className="pointer-events-none absolute -left-24 -top-24 h-96 w-96 rounded-full bg-fuchsia-400/30 blur-3xl motion-safe:animate-drift" />
       <div

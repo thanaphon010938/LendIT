@@ -17,7 +17,7 @@ export function LogoMark({
   return (
     <span
       className={cn(
-        "relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-[30%]",
+        "keep-light relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-[30%]",
         light
           ? "bg-white shadow-lg shadow-indigo-950/20"
           : "bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-600 shadow-md shadow-indigo-500/30",

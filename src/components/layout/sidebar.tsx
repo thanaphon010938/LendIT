@@ -7,6 +7,7 @@ import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { Avatar } from "@/components/ui/avatar";
 import { Logo, LogoMark } from "@/components/brand/logo";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import {
   LayoutDashboard,
   Laptop,
@@ -193,28 +194,36 @@ function UserCard({
   collapsed?: boolean;
 }) {
   return (
-    <div className={cn("flex items-center gap-3 border-t border-border p-4", collapsed && "flex-col gap-2 p-3")}>
-      <Link
-        href="/profile"
-        onClick={onNavigate}
-        title={collapsed ? userName : undefined}
-        className={cn("flex min-w-0 flex-1 items-center gap-3 rounded-lg transition-colors hover:bg-muted", collapsed && "flex-none justify-center")}
-      >
-        <Avatar name={userName} />
-        {!collapsed && <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium">{userName}</p>
-          <p className="text-xs text-muted-foreground">{role === "ADMIN" ? "ผู้ดูแลระบบ" : "ผู้ใช้งาน"}</p>
-        </div>}
-      </Link>
-      <button
-        type="button"
-        onClick={() => signOut({ callbackUrl: "/login" })}
-        title="ออกจากระบบ"
-        aria-label="ออกจากระบบ"
-        className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-destructive"
-      >
-        <LogOut className="h-4 w-4" />
-      </button>
+    <div className="border-t border-border">
+      {!collapsed && (
+        <div className="px-4 pt-3">
+          <ThemeToggle />
+        </div>
+      )}
+      <div className={cn("flex items-center gap-3 p-4", collapsed && "flex-col gap-2 p-3")}>
+        {collapsed && <ThemeToggle compact />}
+        <Link
+          href="/profile"
+          onClick={onNavigate}
+          title={collapsed ? userName : undefined}
+          className={cn("flex min-w-0 flex-1 items-center gap-3 rounded-lg transition-colors hover:bg-muted", collapsed && "flex-none justify-center")}
+        >
+          <Avatar name={userName} />
+          {!collapsed && <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium">{userName}</p>
+            <p className="text-xs text-muted-foreground">{role === "ADMIN" ? "ผู้ดูแลระบบ" : "ผู้ใช้งาน"}</p>
+          </div>}
+        </Link>
+        <button
+          type="button"
+          onClick={() => signOut({ callbackUrl: "/login" })}
+          title="ออกจากระบบ"
+          aria-label="ออกจากระบบ"
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-destructive"
+        >
+          <LogOut className="h-4 w-4" />
+        </button>
+      </div>
     </div>
   );
 }

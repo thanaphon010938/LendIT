@@ -13,7 +13,7 @@ const steps = [
 
 function BorrowHeader({ models, units }: { models: number; units: number }) {
   return (
-    <section className="relative overflow-hidden rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50 via-white to-violet-50 p-5 shadow-card animate-rise-in sm:p-6">
+    <section className="relative overflow-hidden rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50 via-white to-violet-50 p-5 dark:via-card shadow-card animate-rise-in sm:p-6">
       <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-violet-200/40 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-24 left-1/3 h-48 w-48 rounded-full bg-indigo-200/40 blur-3xl" />
 
@@ -26,7 +26,7 @@ function BorrowHeader({ models, units }: { models: number; units: number }) {
             <h1 className="text-2xl font-bold tracking-tight">ยืมอุปกรณ์</h1>
             <p className="mt-1 text-muted-foreground">เลือกอุปกรณ์ที่ต้องการ แล้วส่งคำขอให้ผู้ดูแลอนุมัติ</p>
             {units > 0 && (
-              <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-200">
+              <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 dark:bg-card/80 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-200">
                 <span className="relative flex h-2 w-2">
                   <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 motion-safe:animate-ping" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
@@ -41,7 +41,7 @@ function BorrowHeader({ models, units }: { models: number; units: number }) {
           {steps.map((step, index) => (
             <li
               key={step.title}
-              className="relative flex flex-col items-center gap-1.5 rounded-xl bg-white/70 px-2 py-3 text-center ring-1 ring-inset ring-indigo-100 backdrop-blur-sm motion-safe:animate-rise-in"
+              className="relative flex flex-col items-center gap-1.5 rounded-xl bg-white/70 px-2 py-3 dark:bg-card/70 text-center ring-1 ring-inset ring-indigo-100 backdrop-blur-sm motion-safe:animate-rise-in"
               style={{ animationDelay: `${150 + index * 100}ms` }}
             >
               <span className="relative flex h-9 w-9 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
