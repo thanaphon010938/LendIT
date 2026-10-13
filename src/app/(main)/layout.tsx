@@ -5,6 +5,7 @@ import { getSession } from "@/lib/auth";
 import { MainShell } from "@/components/layout/main-shell";
 import * as loanService from "@/services/loan.service";
 import * as issueService from "@/services/equipment-issue.service";
+import * as userService from "@/services/user.service";
 
 export default async function MainLayout({
   children,
@@ -22,9 +23,9 @@ export default async function MainLayout({
   }
 
   const isAdmin = session.user.role === "ADMIN";
-  const [actionNeededCount, openIssueCount] = isAdmin
-    ? await Promise.all([loanService.countActionNeeded(), issueService.countOpenIssues()])
-    : [0, 0];
+  const [actionNeededCount, openIssueCount, pendingUserCount] = isAdmin
+    ? await Promise.all([loanService.countActionNeeded(), issueService.countOpenIssues(), userService.countPendingRegistrations()])
+    : [0, 0, 0];
 
   return (
     <MainShell
@@ -33,6 +34,7 @@ export default async function MainLayout({
       role={session.user.role}
       actionNeededCount={actionNeededCount}
       openIssueCount={openIssueCount}
+      pendingUserCount={pendingUserCount}
     >
       {session.user.mustChangePassword && (
         <Link

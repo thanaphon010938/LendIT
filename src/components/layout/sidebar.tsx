@@ -63,12 +63,14 @@ function NavLinks({
   onNavigate,
   actionNeededCount = 0,
   openIssueCount = 0,
+  pendingUserCount = 0,
   collapsed = false,
 }: {
   isAdmin: boolean;
   onNavigate?: () => void;
   actionNeededCount?: number;
   openIssueCount?: number;
+  pendingUserCount?: number;
   collapsed?: boolean;
 }) {
   const pathname = usePathname();
@@ -103,7 +105,13 @@ function NavLinks({
               {group.links.map((link) => {
                 const active = pathname === link.href || pathname.startsWith(link.href + "/");
                 const badgeCount =
-                  link.href === "/admin/loans" ? actionNeededCount : link.href === "/admin/issues" ? openIssueCount : 0;
+                  link.href === "/admin/loans"
+                    ? actionNeededCount
+                    : link.href === "/admin/issues"
+                      ? openIssueCount
+                      : link.href === "/admin/users"
+                        ? pendingUserCount
+                        : 0;
                 return (
                   <Link
                     key={link.href}
@@ -217,6 +225,7 @@ export function Sidebar({
   role,
   actionNeededCount = 0,
   openIssueCount = 0,
+  pendingUserCount = 0,
   collapsed = false,
   onToggleCollapsed,
 }: {
@@ -225,6 +234,7 @@ export function Sidebar({
   role: "ADMIN" | "USER";
   actionNeededCount?: number;
   openIssueCount?: number;
+  pendingUserCount?: number;
   collapsed?: boolean;
   onToggleCollapsed?: () => void;
 }) {
@@ -243,7 +253,13 @@ export function Sidebar({
         collapsed ? "w-20" : "w-64"
       )}>
         <Brand collapsed={collapsed} onToggle={() => onToggleCollapsed?.()} />
-        <NavLinks isAdmin={isAdmin} actionNeededCount={actionNeededCount} openIssueCount={openIssueCount} collapsed={collapsed} />
+        <NavLinks
+          isAdmin={isAdmin}
+          actionNeededCount={actionNeededCount}
+          openIssueCount={openIssueCount}
+          pendingUserCount={pendingUserCount}
+          collapsed={collapsed}
+        />
         <UserCard userName={userName} role={role} collapsed={collapsed} />
       </aside>
 
@@ -258,9 +274,9 @@ export function Sidebar({
           aria-label="เปิดเมนู"
         >
           <Menu className="h-5 w-5" />
-          {actionNeededCount > 0 && (
+          {actionNeededCount + pendingUserCount > 0 && (
             <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-600 px-1 text-xs font-semibold text-white">
-              {actionNeededCount > 99 ? "99+" : actionNeededCount}
+              {actionNeededCount + pendingUserCount > 99 ? "99+" : actionNeededCount + pendingUserCount}
             </span>
           )}
         </button>
@@ -281,7 +297,13 @@ export function Sidebar({
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <NavLinks isAdmin={isAdmin} onNavigate={() => setOpen(false)} actionNeededCount={actionNeededCount} openIssueCount={openIssueCount} />
+            <NavLinks
+              isAdmin={isAdmin}
+              onNavigate={() => setOpen(false)}
+              actionNeededCount={actionNeededCount}
+              openIssueCount={openIssueCount}
+              pendingUserCount={pendingUserCount}
+            />
             <UserCard userName={userName} role={role} onNavigate={() => setOpen(false)} />
           </aside>
         </div>

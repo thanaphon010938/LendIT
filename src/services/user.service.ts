@@ -30,6 +30,10 @@ export async function registerUser(input: RegisterUserInput) {
   });
 }
 
+export function countPendingRegistrations() {
+  return userModel.countPendingRegistrations();
+}
+
 export async function decideRegistration(
   adminId: string,
   adminName: string,

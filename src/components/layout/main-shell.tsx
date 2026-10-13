@@ -10,6 +10,7 @@ export function MainShell({
   role,
   actionNeededCount,
   openIssueCount,
+  pendingUserCount,
 }: {
   children: ReactNode;
   userName: string;
@@ -17,6 +18,7 @@ export function MainShell({
   role: "ADMIN" | "USER";
   actionNeededCount: number;
   openIssueCount: number;
+  pendingUserCount: number;
 }) {
   const [collapsed, setCollapsed] = useState(false);
 
@@ -28,6 +30,7 @@ export function MainShell({
         role={role}
         actionNeededCount={actionNeededCount}
         openIssueCount={openIssueCount}
+        pendingUserCount={pendingUserCount}
         collapsed={collapsed}
         onToggleCollapsed={() => setCollapsed((current) => !current)}
       />

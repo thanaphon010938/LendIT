@@ -21,6 +21,10 @@ export function createUser(data: Prisma.UserCreateInput) {
   return db.user.create({ data });
 }
 
+export function countPendingRegistrations() {
+  return db.user.count({ where: { approvalStatus: "PENDING" } });
+}
+
 export function findAllForAdmin() {
   return db.user.findMany({
     orderBy: { createdAt: "desc" },
