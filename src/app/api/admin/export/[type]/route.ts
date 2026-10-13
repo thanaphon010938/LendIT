@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -215,9 +216,24 @@ const EXPORTS = {
   audit: { label: "ประวัติการทำงาน", build: auditCsv },
 } as const;
 
+/**
+ * Power BI (Web connector) can't hold a login session, so it sends `Authorization: Bearer <POWERBI_TOKEN>`.
+ * Disabled when POWERBI_TOKEN is unset or shorter than 32 chars.
+ */
+function hasPowerBiToken(request: NextRequest) {
+  const expected = process.env.POWERBI_TOKEN;
+  if (!expected || expected.length < 32) return false;
+  const header = request.headers.get("authorization") ?? "";
+  const given = header.startsWith("Bearer ") ? header.slice(7).trim() : "";
+  const a = Buffer.from(given);
+  const b = Buffer.from(expected);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
 export async function GET(request: NextRequest, { params }: { params: { type: string } }) {
-  const session = await getSession();
-  if (!session?.user || session.user.role !== "ADMIN" || !session.user.active) {
+  const viaToken = hasPowerBiToken(request);
+  const session = viaToken ? null : await getSession();
+  if (!viaToken && (!session?.user || session.user.role !== "ADMIN" || !session.user.active)) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
   const spec = EXPORTS[params.type as keyof typeof EXPORTS];
@@ -226,7 +242,10 @@ export async function GET(request: NextRequest, { params }: { params: { type: st
   const csv = await spec.build(request);
   const from = request.nextUrl.searchParams.get("from");
   const to = request.nextUrl.searchParams.get("to");
-  await logAudit(session.user, `export.${params.type}`, `ส่งออกข้อมูล ${spec.label}${from || to ? ` (${from ?? "เริ่มต้น"} ถึง ${to ?? "ปัจจุบัน"})` : ""}`);
+  // Scheduled Power BI refreshes aren't logged — they would flood the audit log.
+  if (session?.user) {
+    await logAudit(session.user, `export.${params.type}`, `ส่งออกข้อมูล ${spec.label}${from || to ? ` (${from ?? "เริ่มต้น"} ถึง ${to ?? "ปัจจุบัน"})` : ""}`);
+  }
 
   const filename = `lendit-${params.type}-${day(new Date())}.csv`;
   return new NextResponse(csv, {
