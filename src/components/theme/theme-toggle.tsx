@@ -1,30 +1,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Monitor, Moon, Sun, type LucideIcon } from "lucide-react";
+import { Moon, Sun, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { THEME_STORAGE_KEY as STORAGE_KEY } from "@/components/theme/theme-script";
 
-export type ThemeChoice = "light" | "dark" | "system";
+export type ThemeChoice = "light" | "dark";
 
 function readChoice(): ThemeChoice {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored === "dark" || stored === "system" ? stored : "light";
+    return localStorage.getItem(STORAGE_KEY) === "dark" ? "dark" : "light";
   } catch {
     return "light";
   }
 }
 
-function apply(choice: ThemeChoice) {
-  const dark = choice === "dark" || (choice === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
-  document.documentElement.classList.toggle("dark", dark);
-}
-
-const OPTIONS: { value: ThemeChoice; label: string; hint: string; icon: LucideIcon }[] = [
-  { value: "light", label: "สว่าง", hint: "ธีมสว่าง", icon: Sun },
-  { value: "dark", label: "มืด", hint: "ธีมมืด", icon: Moon },
-  { value: "system", label: "ระบบ", hint: "ตามการตั้งค่าของเครื่อง", icon: Monitor },
+const OPTIONS: { value: ThemeChoice; label: string; icon: LucideIcon }[] = [
+  { value: "light", label: "สว่าง", icon: Sun },
+  { value: "dark", label: "มืด", icon: Moon },
 ];
 
 export function ThemeToggle({ compact = false }: { compact?: boolean }) {
@@ -33,14 +26,6 @@ export function ThemeToggle({ compact = false }: { compact?: boolean }) {
 
   useEffect(() => setChoice(readChoice()), []);
 
-  useEffect(() => {
-    if (choice !== "system") return;
-    const media = window.matchMedia("(prefers-color-scheme: dark)");
-    const onChange = () => apply("system");
-    media.addEventListener("change", onChange);
-    return () => media.removeEventListener("change", onChange);
-  }, [choice]);
-
   function choose(next: ThemeChoice) {
     setChoice(next);
     try {
@@ -48,22 +33,21 @@ export function ThemeToggle({ compact = false }: { compact?: boolean }) {
     } catch {
       // Private mode: the choice still applies for this page.
     }
-    apply(next);
+    document.documentElement.classList.toggle("dark", next === "dark");
   }
 
   if (compact) {
-    const index = OPTIONS.findIndex((option) => option.value === (choice ?? "light"));
-    const current = OPTIONS[index];
-    const next = OPTIONS[(index + 1) % OPTIONS.length];
+    const dark = choice === "dark";
+    const label = dark ? "เปลี่ยนเป็นธีมสว่าง" : "เปลี่ยนเป็นธีมมืด";
     return (
       <button
         type="button"
-        onClick={() => choose(next.value)}
-        title={`ธีม: ${current.label} (กดเพื่อเปลี่ยนเป็น${next.label})`}
-        aria-label={`ธีม: ${current.label} กดเพื่อเปลี่ยนเป็น${next.label}`}
+        onClick={() => choose(dark ? "light" : "dark")}
+        title={label}
+        aria-label={label}
         className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
       >
-        <current.icon className="h-4 w-4" />
+        {dark ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
       </button>
     );
   }
@@ -78,7 +62,6 @@ export function ThemeToggle({ compact = false }: { compact?: boolean }) {
             type="button"
             role="radio"
             aria-checked={selected}
-            title={option.hint}
             onClick={() => choose(option.value)}
             className={cn(
               "flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-md px-2 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground",
