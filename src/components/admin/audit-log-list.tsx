@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight, Download, History, Loader2, Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/ui/date-picker";
 import { EmptyState } from "@/components/shared/empty-state";
 import { cn } from "@/lib/utils";
 
@@ -92,17 +93,18 @@ export function AuditLogList({
         <div className="flex items-end gap-2">
           <div className="flex flex-col gap-1">
             <label htmlFor="audit-from" className="text-xs text-muted-foreground">ตั้งแต่</label>
-            <Input id="audit-from" type="date" value={filters.from} onChange={(e) => navigate({ from: e.target.value })} className="w-40" />
+            <DatePicker id="audit-from" name="from" value={filters.from} onChange={(from) => navigate({ from })} placeholder="ทั้งหมด" className="w-48" />
           </div>
           <div className="flex flex-col gap-1">
             <label htmlFor="audit-to" className="text-xs text-muted-foreground">ถึง</label>
-            <Input
+            <DatePicker
               id="audit-to"
-              type="date"
+              name="to"
               value={filters.to}
               min={filters.from || undefined}
-              onChange={(e) => navigate({ to: e.target.value })}
-              className="w-40"
+              onChange={(to) => navigate({ to })}
+              placeholder="ทั้งหมด"
+              className="w-48"
             />
           </div>
           {hasDateFilter && (

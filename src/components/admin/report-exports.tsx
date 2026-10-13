@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { ClipboardList, Download, PackageSearch, UsersRound, Wrench, type LucideIcon } from "lucide-react";
+import { ClipboardList, Download, PackageSearch, UsersRound, Wrench, X, type LucideIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-picker";
 import { cn } from "@/lib/utils";
 
 type Report = { type: string; title: string; description: string; icon: LucideIcon; iconClass: string; dated: boolean };
@@ -54,12 +55,27 @@ export function ReportExports() {
         <CardContent className="flex flex-wrap items-end gap-3 p-4">
           <div className="flex flex-col gap-1.5">
             <label htmlFor="report-from" className="text-sm font-medium">ตั้งแต่วันที่</label>
-            <Input id="report-from" type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="w-44" />
+            <DatePicker id="report-from" name="from" value={from} onChange={setFrom} placeholder="ทั้งหมด" className="w-48" />
           </div>
           <div className="flex flex-col gap-1.5">
             <label htmlFor="report-to" className="text-sm font-medium">ถึงวันที่</label>
-            <Input id="report-to" type="date" value={to} min={from || undefined} onChange={(e) => setTo(e.target.value)} className="w-44" />
+            <DatePicker id="report-to" name="to" value={to} min={from || undefined} onChange={setTo} placeholder="ทั้งหมด" className="w-48" />
           </div>
+          {(from || to) && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-10 w-10"
+              onClick={() => {
+                setFrom("");
+                setTo("");
+              }}
+              aria-label="ล้างช่วงวันที่"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
           <p className="pb-2.5 text-xs text-muted-foreground">
             ใช้กับรายงานที่มีวันที่ (ยืม-คืน, ซ่อม) · เว้นว่างไว้ = ทั้งหมด
           </p>
